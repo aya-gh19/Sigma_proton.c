@@ -1,0 +1,372 @@
+{
+   TFile fileOutput1("Sigma_proton_output_test.root","recreate");
+  gStyle->SetOptStat(0);
+
+  // My interaction is gamma n -> K+ Sigma-;  Sigma- p -> Sigma- p
+  // The Sigma- decays with nearly 100% branching ratio to n pi-
+
+//========================================================================================================================================================
+
+  // Histograms
+
+  // Beam energy distribution
+  TH1F* h_Beam = new TH1F("h_Beam","Bremsstrahlung photon Beam; E [GeV]; Counts" ,200,0,5);
+  // Invariant mass histograms to reconstruct Î£-
+  TH1F* h_inv_Sigma = new TH1F("h_inv_Sigma","Invariant mass of #Sigma; Mass[GeV/c^2]",200,0,2);
+
+  // scattering angle distributions
+  TH1F* h_Kaon_angles  = new TH1F("h_Kaon_angles","K^{+} scattering angle; Scattering angle (degree)" ,200,0,180);
+  TH1F* h_Sigma_angles = new TH1F("h_Sigma_angles","#Sigma^{-} scattering angle; Scattering angle (degree)" ,200,0,180);
+  // Momentum Histograms
+  TH1F* h_Kaon_rho  = new TH1F("h_Kaon_rho","K^{+} momentum; Momentum [GeV/c]; Counts" ,200,0,5);
+  TH1F* h_Sigma_rho = new TH1F("h_Sigma_rho","#Sigma^{-} momentum; Momentum [GeV/c]; Counts" ,200,0,5);
+  TH1F* h_Sigmav2_rho = new TH1F("h_Sigmav2_rho","Scattered #Sigma^{-} momentum; Momentum [GeV/c]; Counts" ,200,0,5);
+  TH1F* h_Beam_rho = new TH1F("h_Beam_rho","Photon Beam momentum; Momentum [GeV/c]" ,200,0,5);
+
+  // Angular dependence for all the particles
+  TH2D* h_Kaon_Plus      = new TH2D("h_Kaon_Plus","Angular dependence of K^{+}; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_Sigma_Minus    = new TH2D("h_Sigma_Minus","Angular dependence of secondary Beam #Sigma^{-}; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_Sigmav2        = new TH2D("h_Sigmav2","Angular dependence of scattered #Sigma^{-}; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_sctr_proton    = new TH2D("h_sctr_proton","Angular dependence of scattered proton; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_Neutron_Sigma  = new TH2D("h_Neutron_Sigma","Angular dependence of n (#Sigma); #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_Pi_Minus_Sigma = new TH2D("h_Pi_Minus_Sigma","Angular dependence of Ï^{-} (#Sigma); #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  // Acceptance Histograms
+  TH2D* h_acceptance_Kaon_Plus      = new TH2D("h_acceptance_Kaon_Plus","Acceptance of K^{+}; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_acceptance_sctr_proton    = new TH2D("h_acceptance_sctr_proton","Acceptance of the scattered proton; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_acceptance_Pi_Minus_Sigma = new TH2D("h_acceptance_Pi_Minus_Sigma","Acceptance of #Sigma^{-}-produced #pi^{-}; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  TH2D* h_acceptance_Beam           = new TH2D("h_acceptance_Beam","Acceptance of photon Beam; #Theta (degrees); #rho (GeV/c)",2200,0,180,200,0,5);
+  TH2D* h_acceptance_Sigmav2        = new TH2D("h_acceptance_Sigmav2","Acceptance of #Sigma^{-} Beam; #Theta (degrees); #rho (GeV/c)",200,0,180,200,0,5);
+  // Constrained Histograms
+  TH2D* h_constrained_Kaon_Plus      = new TH2D("h_constrained_Kaon_Plus","Constrained K^{+}",200,0,180,200,0,5);
+  TH2D* h_constrained_sctr_proton    = new TH2D("constrained_sctr_proton","Constrained scattered proton", 200,0,180,200,0,5);
+  TH2D* h_constrained_Pi_Minus_Sigma = new TH2D("h_constrained_Pi_Minus_Sigma","Constrained #pi^{-}",200,0,180,200,0,5);
+  TH1F* h_constrained_Beam           = new TH1F("h_constrained_Beam","Constrained photon Beam",200,0,5);
+  TH1F* h_constrained_Sigmav2        = new TH1F("h_constrained_Sigmav2","Constrained scattered #Sigma^{-}",200,0,5);
+  // Path Length and Decay Vertex Histograms
+  TH3D* h_xyz       = new TH3D("h_xyz", "Uniformly distributed xyz points;x;y;z", 200, -4, 4, 200, -4, 4, 200, -20, 50);
+  TH1F* h_path      = new TH1F("h_path","Path length; distance (cm); ",200,-40,40);
+  TH1F* h_decaypath = new TH1F("h_decaypath","#Sigma^{-} Decay path; #Sigma^{-} path (cm); ",200,-40,40);
+  TH2D* h_decay_xy  = new TH2D("h_decay_xy","x-y veretex #Sigma^{-}; x-vertex (cm); y-vertex (cm)",200,-40,40,200,-40,40);
+  TH1F* h_decay_z   = new TH1F("h_decay_z","z-vertex decay #Sigma^{-}; z-coordinate (cm)",200,-20,100);
+  TH2D* h_sigma_phi_xy = new TH2D("h_sigma_phi_xy", "#phi of #Sigma^{-} vs X-Y component of path length; \phi (degrees); length (cm)",200,0,50,200,0,180);
+  TH2D* h_sigma_theta_z = new TH2D("h_sigma_theta_z", "#theta of #Sigma^{-} vs Z component of path length; #theta (degrees); length (cm)",200,0,50,200,0,180);
+  TH2D* h_path_theta = new TH2D("h_path_theta","#theta of #Sigma^{-} vs path length; #theta (degrees); path length (cm)",200,0,280,200,0,50);
+  TH2D* h_decaypath_theta = new TH2D("h_decaypath_theta","#theta of #Sigma^{-} decay vs path length; #theta (degrees); length (cm)",200,0,50,200,0,50);
+
+  // Cross sections histogram
+
+//========================================================================================================================================================
+
+  // How many events to simulate and percentage completed
+  Int_t nevents = 100000;  // increase this
+  Int_t Percentage = nevents/100;
+
+//========================================================================================================================================================
+
+  // Generating the events which describe the interaction is the first step of the simulation and is done using the class TLorentzVector
+  TLorentzVector Beam, target, proton_trgt; // initial-state particles
+  TLorentzVector *Kaon_Plus, *Sigma_Minus; // First vertex particles
+  TLorentzVector *Sigmav2, *sctr_proton; // second veretex
+  TLorentzVector *Neutron_Sigma, *Pi_Minus_Sigma; // Second vertex particles
+
+  // Making Weights
+  Double_t Phasespace_Weight_1;
+
+//========================================================================================================================================================
+
+  // Defining the four-momentum vector of the target in GeV (Px,Py,Pz,M)
+  target.SetXYZM(0,0,0,0.93957);     // quasi-free neutron in deuterium target
+  proton_trgt.SetXYZM(0,0,0,0.93827); // secondary target
+
+  // Defining the masses of the final-state particles using particle properties obtained from PDG
+  Double_t Masses_1[2] = {0.49368,1.19745}; // K^+ Î£^- (primary vertex)
+  Double_t Masses_2[2] = {1.19745,0.93827}; // sigma proton
+  Double_t Masses_3[2] = {0.93957,0.13957}; // n, Ï^â (Î£^- decay into neutron and Ï^â)
+  TLorentzVector Inv_Sigma; // 4-vector of reconstructed Î£^- from its daughter particles n, Ï^â
+
+  // Creating decay vertices using TGenPhaseSpace class, which allows the generation of events in the CM of the reaction
+  TGenPhaseSpace Vertex_1, Vertex_2, Vertex_3;
+
+  // The Bremsstrahlung photon Beam is not monoenergetic, hence we need to generate the events within a certain range of energies, using a random number generator
+  TRandom3 *rand = new TRandom3();
+  gRandom = rand;
+
+//========================================================================================================================================================
+
+  // Looping over simulated events
+  for (Long64_t i=0;i<nevents;i++){
+    if (i % Percentage == 0){  // Counter, shows percentage of simulated events completed
+      fprintf (stderr, "%lld\r", i/Percentage);
+      fflush (stderr);
+    }
+
+    // Beam energy generated from 0 GeV to 2 GeV
+    Double_t Beam_RND = gRandom->Uniform(1.05,2.3);
+    Beam.SetPxPyPzE(0,0,Beam_RND, Beam_RND);   // photon Beam (LAB frame)
+    h_Beam->Fill(Beam_RND);  // distribution histogram
+    TLorentzVector V1 = Beam + target; // the energy of the center of momentum (CM
+
+//========================================================================================================================================================
+
+    // The first vertex Î³n â K^+ Î£^-
+    Double_t V = Vertex_1.SetDecay(V1,2,Masses_1); // initial conditions (total energy, no. particles, mass array)
+    if (!V) continue;  //stops the calculation of beta at a certain point?
+
+    // Generating the event and defining the phasespace weight for the decay
+    Phasespace_Weight_1 = Vertex_1.Generate();
+    // Assigning the decay particles
+    Kaon_Plus      = Vertex_1.GetDecay(0);
+    Sigma_Minus    = Vertex_1.GetDecay(1);
+
+//========================================================================================================================================================
+
+    // The second vertex (scattering)  Î£^-p â Î£^-p
+    TLorentzVector V2 = (TLorentzVector)*Sigma_Minus + proton_trgt;
+    // initial conditions (total energy, no. particles, mass array)
+    Vertex_2.SetDecay(V2,2,Masses_2);
+    // Generating the event and defining the phasespace weight for the decay
+    Double_t Phasespace_Weight_2 = Vertex_2.Generate();
+    // Assigning the decay particles
+    Sigmav2  = Vertex_2.GetDecay(0);
+    sctr_proton = Vertex_2.GetDecay(1);
+
+//========================================================================================================================================================
+
+    // The third vertex (decay) Î£^-  â  change to 3
+    TLorentzVector V3 = (TLorentzVector)*Sigmav2; // total energy for second decay from Sigma-
+    // initial conditions (total energy, no. particles, mass array)
+    Vertex_3.SetDecay(V3,2,Masses_3);
+    // Generating the event and defining the phasespace weight for the decay
+    Double_t Phasespace_Weight_3 = Vertex_3.Generate();
+    // Assigning the decay particles
+    Neutron_Sigma  = Vertex_3.GetDecay(0);
+    Pi_Minus_Sigma = Vertex_3.GetDecay(1);
+
+    // Adding 4-vector of neutron and pion, used to find invariant mass of Sigma with .M()
+    Inv_Sigma = (TLorentzVector)*Neutron_Sigma + (TLorentzVector)*Pi_Minus_Sigma;
+
+  //========================================================================================================================================================
+
+    // Path length calculations
+
+    // Let the cylinder target be aligned with the z-axis and the cylinder centre located at (0,0,D/2)
+    Double_t radius = 2;  // radius of cylinder in cm
+    Double_t d = 40; // length of cylinder in cm
+    // Generating points uniformly and randomly on a disc with the same radius as the cylinder
+    Double_t phi = gRandom->Uniform(0, 2*TMath::Pi());  // azimuthal angle from uniformly distributed random numbers between 0,2pi
+    Double_t r = sqrt(gRandom->Rndm())*radius; //multiply R (radius) by the square-root of a random number in [0, 1] to get the initial position
+    Double_t z = gRandom->Uniform(0, d); // then choosing the distance along the axis uniformly
+    //  Thus obtaining the cartesian points
+    Double_t x = radius * TMath::Cos(phi);
+    Double_t y = radius * TMath::Sin(phi);
+    Double_t z = z; // symmetry
+
+    // Defining angles for the  path length formula
+    Double_t phi_v = (3/2)*TMath::Pi() - TMath::ATan(x/y); // phi vertix
+    Double_t c = (r/radius)*TMath::Sin(phi_v - Sigma_Minus->Phi());
+    Double_t alpha_R = phi + TMath::ASin(c);
+    // prescribed angle between the radius R and position vector r to be used with law of cosines
+    Double_t alpha = phi_v - alpha_R;
+    // path length formula
+    Double_t l = TMath::Sqrt(radius*radius + r*r - 2*radius*r*TMath::Cos(alpha));
+    // the longitudinal path is
+    Double_t l_p = l / TMath::Tan(Sigma_Minus->Theta());
+    // and the z vertex of the exit position is
+    Double_t z_exit = l_p + z;
+
+    // Case 1: z_exit is ouside the target cell length (larger than d or smaller than 0) then the particle will exit from the end caps
+    if (z_exit<0 || z_exit>d){
+      if (Sigma_Minus->Theta() < TMath::Pi()/2){
+        l_p = d-z; // longitudinal path for when Î¸ < 90â¦
+      }
+      else if (Sigma_Minus->Theta() > TMath::Pi()/2){
+        l_p = z;  // longitudinal path for when Î¸ > 90â¦
+      }
+      Double_t path = l_p/TMath::Cos(Sigma_Minus->Theta());
+    }
+    // Case 2: z_exit is within the the target cell length (larger than 0 and smaller than d)
+    else if (z>0 && z<d){
+      Double_t path = l_p/TMath::Sin(Sigma_Minus->Theta());
+    }
+
+//========================================================================================================================================================
+
+    // Decay path length
+
+    /// Decay proability distribution, where cÏ = 4.434 cm for Î£^
+    TF1*decaypath = new TF1("decaypath", "TMath::Exp(-x/([0]*[1]*4.434))",0,100);
+    // Parameters
+    Double_t Sigma_Beta = Sigma_Minus->Beta();
+    Double_t Sigma_Gamma = Sigma_Minus->Gamma();
+    decaypath->SetParameter(0,Sigma_Beta);
+    decaypath->SetParameter(1,Sigma_Gamma);
+    // Simulate the decay path: use GetRandom to simulate a random number distributed according to the distribution of the decay proability function
+    Double_t decay = decaypath->GetRandom();
+    // where does the particle decay along the path length?
+    if  (decay < path){
+      Double_t decay_path_length = decay;
+    }
+    else if (decay > path){
+      Double_t decay_path_length = path;
+    }
+    // decay coordinates
+    Double_t x_decay = x + decay_path_length*TMath::Cos(Sigma_Minus->Phi());
+    Double_t y_decay = y + decay_path_length*TMath::Sin(Sigma_Minus->Phi());
+    Double_t r = x_decay*x_decay + y_decay*y_decay;
+    Double_t z_decay = z + TMath::Sqrt(decay_path_length*decay_path_length-r);
+
+//========================================================================================================================================================
+
+// constraints (10 to 160 degrees for clas)
+if (Kaon_Plus->Rho() > 0.2 && sctr_proton->Rho() > 0.2 && Pi_Minus_Sigma->Rho() > 0.2){
+  if ((Kaon_Plus->Theta() > 10*TMath::DegToRad() && Kaon_Plus->Theta() < 160*TMath::DegToRad())){
+    if ((sctr_proton->Theta() > 10*TMath::DegToRad() && sctr_proton->Theta() < 160*TMath::DegToRad())){
+      if ((Pi_Minus_Sigma->Theta() > 10*TMath::DegToRad() && Pi_Minus_Sigma->Theta() < 160*TMath::DegToRad())){
+        h_constrained_Kaon_Plus->Fill(Kaon_Plus->Theta()*TMath::RadToDeg(),Kaon_Plus->Rho(),Phasespace_Weight_1);
+        h_constrained_sctr_proton->Fill(sctr_proton->Theta()*TMath::RadToDeg(),sctr_proton->Rho(),Phasespace_Weight_1*Phasespace_Weight_2);
+        h_constrained_Pi_Minus_Sigma->Fill(Pi_Minus_Sigma->Theta()*TMath::RadToDeg(),Pi_Minus_Sigma->Rho(),Phasespace_Weight_1*Phasespace_Weight_2*Phasespace_Weight_3);
+        h_constrained_Beam->Fill(Beam->Rho(),Phasespace_Weight_1);  // or all Phasespace_Weights ?
+        h_constrained_Sigmav2->Fill(Sigmav2->Rho(),Phasespace_Weight_1*Phasespace_Weight_2);
+      }
+    }
+  }
+}
+
+//========================================================================================================================================================
+
+/*
+    // Luminosity
+
+    // First vertex
+    Double_t Beam_flux = nevents;  // any number???  mico A
+    Double_t Beam_cs;  // cross section in cm^-1
+    Double_t target_density = 0.1630; // liquid deuterium, g/cm^3
+    Double_t target_length = 40; // cm
+    Double_t Beam_luminosity = Beam_flux*target_density*target_length;// avogadros number
+
+    // Second vertex
+    Double_t sigma_flux = Beam_luminosity*Beam_cs;
+    Double_t sigma_cs;
+    Double_t sigma_luminosity = sigma_flux*target_density*decay_path_length; // decay path length or just path length??
+*/
+
+//========================================================================================================================================================
+
+    // Filling histograms
+
+    // Invariant mass
+    h_inv_Sigma->Fill(Inv_Sigma.M(), Phasespace_Weight_1*Phasespace_Weight_3);
+    h_Beam_rho->Fill(Beam->Rho());
+
+    // Angular distributions (x,weights applied)
+    h_Kaon_angles->Fill(Kaon_Plus->Theta()*TMath::RadToDeg(),Phasespace_Weight_1);
+    h_Sigma_angles->Fill(Sigma_Minus->Theta()*TMath::RadToDeg(),Phasespace_Weight_1);
+
+    // Momentum distributions (x,weights applied)
+    h_Kaon_rho->Fill(Kaon_Plus->Rho(),Phasespace_Weight_1);
+    h_Sigma_rho->Fill(Sigma_Minus->Rho(),Phasespace_Weight_1);
+    h_Sigmav2_rho->Fill(Sigmav2->Rho(),Phasespace_Weight_1*Phasespace_Weight_2);
+
+    // Angular dependence (x,weights applied)
+    h_Kaon_Plus->Fill(Kaon_Plus->Theta()*TMath::RadToDeg(),Kaon_Plus->Rho(),Phasespace_Weight_1);
+    h_Sigma_Minus->Fill(Sigma_Minus->Theta()*TMath::RadToDeg(),Sigma_Minus->Rho(),Phasespace_Weight_1);
+    h_Sigmav2->Fill(Sigmav2->Theta()*TMath::RadToDeg(),Sigmav2->Rho(),Phasespace_Weight_1*Phasespace_Weight_2);
+    h_sctr_proton->Fill(sctr_proton->Theta()*TMath::RadToDeg(),sctr_proton->Rho(),Phasespace_Weight_1*Phasespace_Weight_2);
+    h_Neutron_Sigma->Fill(Neutron_Sigma->Rho(),Neutron_Sigma->Theta()*TMath::RadToDeg(),Phasespace_Weight_1*Phasespace_Weight_2*Phasespace_Weight_3);
+    h_Pi_Minus_Sigma->Fill(Pi_Minus_Sigma->Rho(),Pi_Minus_Sigma->Theta()*TMath::RadToDeg(), Phasespace_Weight_1*Phasespace_Weight_2*Phasespace_Weight_3);
+
+    // Path length and decay histograms
+    h_xyz->Fill(x,y,z);
+    h_path->Fill(path);
+    h_decaypath->Fill(decay_path_length);
+    h_decay_xy->Fill(x_decay,y_decay);
+    h_decay_z->Fill(z_decay);
+    h_sigma_phi_xy->Fill(Sigma_Minus->Phi()*TMath::RadToDeg(),l);
+    h_sigma_theta_z->Fill(Sigma_Minus->Theta()*TMath::RadToDeg(),l_p);
+    h_path_theta->Fill(Sigma_Minus->Theta()*TMath::RadToDeg(),path);
+    h_decaypath_theta->Fill(Sigma_Minus->Theta()*TMath::RadToDeg(),decay_path_length);
+
+}
+//=======================================================================================================================================================
+
+    // Accepetance
+
+    // Find acceptance by dividing histogram after angle cut by original histogram
+    h_acceptance_Kaon_Plus->Divide(h_constrained_Kaon_Plus, h_Kaon_Plus);
+    h_acceptance_sctr_proton->Divide(h_constrained_sctr_proton, h_sctr_proton);
+    h_acceptance_Pi_Minus_Sigma->Divide(h_constrained_Pi_Minus_Sigma, h_Pi_Minus_Sigma);
+    //h_acceptance_Beam->Divide(h_constrained_Beam, h_Beam);
+    //h_acceptance_Sigmav2->Divide(h_constrained_Sigmav2, h_Sigmav2_rho);
+//========================================================================================================================================================
+
+//Writes histograms to file
+fileOutput1.Write();
+
+// Draw histograms
+/*
+TCanvas* c2 = new TCanvas("c2","stacked hists",5,5,1000,1000);
+h_inv_Sigma->Draw("colz");
+TCanvas* c3 = new TCanvas("c3","stacked hists",5,5,1000,1000);
+h_Beam->Draw("colz");
+
+TCanvas* c4 = new TCanvas("c4","stacked hists",5,5,1000,1000);
+h_Kaon_angles->Draw("colz");
+TCanvas* c5 = new TCanvas("c5","stacked hists",5,5,1000,1000);
+h_Sigma_angles->Draw("colz");
+
+TCanvas* c6 = new TCanvas("c6","stacked hists",5,5,1000,1000);
+h_Kaon_rho->Draw("colz");
+TCanvas* c7 = new TCanvas("c7","stacked hists",5,5,1000,1000);
+h_Sigma_rho->Draw("colz");
+
+TCanvas* c10 = new TCanvas("c10","stacked hists",5,5,1000,1000);
+h_Kaon_Plus->Draw("colz");
+TCanvas* c11 = new TCanvas("c11","stacked hists",5,5,1000,1000);
+h_Sigma_Minus->Draw("colz");
+
+TCanvas* c12 = new TCanvas("c12","stacked hists",5,5,1000,1000);
+h_xyz->Draw();
+TCanvas* c13 = new TCanvas("c13","stacked hists",5,5,1000,1000);
+h_decay_xy->Draw("colz");
+TCanvas* c14 = new TCanvas("c14","stacked hists",5,5,1000,1000);
+h_decay_z->Draw("colz");
+TCanvas* c15 = new TCanvas("c15","stacked hists",5,5,1000,1000);
+h_decaypath->Draw("colz");
+TCanvas* c16 = new TCanvas("c16","stacked hists",5,5,1000,1000);
+h_Beam_rho->Draw("colz");
+*/
+TCanvas* c17 = new TCanvas("c17","stacked hists",5,5,1000,1000);
+h_constrained_Kaon_Plus->Draw("coltz");
+TCanvas* c18 = new TCanvas("c18","stacked hists",5,5,1000,1000);
+h_constrained_sctr_proton->Draw("coltz");
+TCanvas* c20 = new TCanvas("c20","stacked hists",5,5,1000,1000);
+h_constrained_Pi_Minus_Sigma->Draw("coltz");
+TCanvas* c21 = new TCanvas("c21","stacked hists",5,5,1000,1000);
+h_constrained_Beam->Draw("coltz");
+TCanvas* c22 = new TCanvas("c22","stacked hists",5,5,1000,1000);
+h_constrained_Sigmav2->Draw("coltz");
+
+TCanvas* c23 = new TCanvas("c23","stacked hists",5,5,1000,1000);
+h_acceptance_Kaon_Plus->Draw("coltz");
+TCanvas* c24 = new TCanvas("c24","stacked hists",5,5,1000,1000);
+h_acceptance_sctr_proton->Draw("coltz");
+TCanvas* c25 = new TCanvas("c25","stacked hists",5,5,1000,1000);
+h_acceptance_Pi_Minus_Sigma->Draw("coltz");
+TCanvas* c26 = new TCanvas("c26","stacked hists",5,5,1000,1000);
+h_acceptance_Beam->Draw("coltz");
+TCanvas* c27 = new TCanvas("c27","stacked hists",5,5,1000,1000);
+h_acceptance_Sigmav2->Draw("coltz");
+
+TCanvas* c28 = new TCanvas("c28","stacked hists",5,5,1000,1000);
+h_decaypath->Draw("coltz");
+TCanvas* c29 = new TCanvas("c29","stacked hists",5,5,1000,1000);
+h_sigma_phi_xy->Draw("coltz");
+TCanvas* c30 = new TCanvas("c30","stacked hists",5,5,1000,1000);
+h_sigma_theta_z->Draw("coltz");
+TCanvas* c31 = new TCanvas("c31","stacked hists",5,5,1000,1000);
+h_path_theta->Draw("coltz");
+TCanvas* c32 = new TCanvas("c32","stacked hists",5,5,1000,1000);
+h_decaypath_theta->Draw("coltz");
+
+
+}
