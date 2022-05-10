@@ -146,7 +146,7 @@
 
 //========================================================================================================================================================
 
-    // The third vertex (decay) Σ^-  →  change to 3
+    // The third vertex (decay) Σ^- → n π^−
     TLorentzVector V3 = (TLorentzVector)*Scattered_Sigma; // total energy for second decay from Sigma-
     // initial conditions (total energy, no. particles, mass array)
     Vertex_3.SetDecay(V3,2,Masses_3);
@@ -315,14 +315,19 @@ if (Kaon_Plus->Rho() > 0.2 && Scattered_Proton->Rho() > 0.2 && Pi_Minus_Sigma->R
     The average K^+ Σ^- cross section is approximated in this simulation as 0.00900 which is the cross section for gamma n -> strange particles from
      https://lib-extopc.kek.jp/preprints/PDF/1991/9101/9101079.pdf
     */
-
-    // Photon beam luminosity
-    Double_t Beam_luminosity = nevents*target_density*target_length*(avgdr_num/target_atomicmass); // avogadros number is 6.02E23
-    Double_t Beam_cs = 0.00900;  // cross section in cm^-1
+    
+     // Photon beam luminosity
+    Double_t Beam_luminosity = nevents*target_density*target_length*(avgdr_num/target_atomicmass); // unit in cm^-2
+    Double_t Beam_cs = 9.0E-30;  // cross section is 0.00900 millibarn (10^-27 cm^2), or  9.0 * 10^-30 cm^2
 
     // Secondoary beam (Σ^-) luminosity
-    Double_t sigma_flux = Beam_cs*Beam_luminosity;
-    Double_t sigma_luminosity = sigma_flux*target_density*(h_decaypath->GetMean())*(avgdr_num/target_atomicmass);
+    Double_t sigma_flux = Beam_cs*Beam_luminosity; // cm^-2 * cm^-2 cancels
+    Double_t sigma_luminosity = sigma_flux*target_density*(h_decaypath->GetMean())*(avgdr_num/target_atomicmass);  // unit in cm^-2
+
+    // Number of Σ^- particles produced produced over 100 days (conversion from s^-1 to 100 days is *60*60*24*100)
+    cout<<"Total number of Sigma^- produced over 100 days: " << sigma_flux*60*60*24*100 << endl;
+    // Number of scattered Σ^- produced over 100 days
+
 
 //========================================================================================================================================================
 
